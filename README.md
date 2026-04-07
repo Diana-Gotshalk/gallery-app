@@ -1,16 +1,30 @@
-# React + Vite
+# Галерея с фильтрами и каруселью
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Небольшое приложение на React + Vite: фильтр по жанрам, карусель внутри выбранной категории и сетка превью.
 
-Currently, two official plugins are available:
+## Возможности
+- Фильтрация снимков по категориям.
+- Перелистывание карточек в карусели с подсчётом текущего кадра.
+- Быстрый выбор кадра из сетки превью.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Требования
+- Node.js 20.19+.
 
-## React Compiler
+## Установка и запуск
+```bash
+git clone https://github.com/<user>/<repo>.git
+cd <repo>
+npm install
+npm run dev
+```
+Открыть адрес из вывода (обычно `http://localhost:5173/`).
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Сборка
+```bash
+npm run build
+```
+Готовые файлы — в `dist/`.
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Примечания
+- Изображения тянутся с Unsplash, нужен интернет.
+- Стили и UI собраны в `src/App.css`, данные карточек — в `src/App.jsx`.
