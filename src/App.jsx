@@ -1,7 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
+import FilterBar from './components/FilterBar'
+import SearchBar from './components/SearchBar'
+import Carousel from './components/Carousel'
+import ShotGrid from './components/ShotGrid'
+import ShotForm from './components/ShotForm'
 import './App.css'
 
-const shots = [
+const initialShots = [
   {
     id: 1,
     title: 'Неон после дождя',
@@ -124,23 +129,58 @@ const shots = [
   },
 ]
 
-const categories = ['Все', ...new Set(shots.map((shot) => shot.category))]
+const emptyForm = {
+  title: '',
+  category: '',
+  mood: '',
+  location: '',
+  full: '',
+  thumb: '',
+  description: '',
+}
 
 function App() {
+  const [shots, setShots] = useState(initialShots)
   const [activeCategory, setActiveCategory] = useState('Все')
   const [currentIndex, setCurrentIndex] = useState(0)
+  const [search, setSearch] = useState('')
+  const [formData, setFormData] = useState(emptyForm)
+  const [editingId, setEditingId] = useState(null)
+
+  const categories = useMemo(
+    () => ['Все', ...new Set(shots.map((shot) => shot.category))],
+    [shots],
+  )
+
+  const countsByCategory = useMemo(() => {
+    const counts = shots.reduce((acc, shot) => {
+      acc[shot.category] = (acc[shot.category] || 0) + 1
+      return acc
+    }, {})
+    counts['Все'] = shots.length
+    return counts
+  }, [shots])
 
   const filteredShots = useMemo(() => {
-    return activeCategory === 'Все'
-      ? shots
-      : shots.filter((shot) => shot.category === activeCategory)
-  }, [activeCategory])
+    const query = search.trim().toLowerCase()
+    return shots.filter((shot) => {
+      const byCategory = activeCategory === 'Все' || shot.category === activeCategory
+      const bySearch =
+        !query ||
+        shot.title.toLowerCase().includes(query) ||
+        shot.description.toLowerCase().includes(query) ||
+        shot.location.toLowerCase().includes(query)
+      return byCategory && bySearch
+    })
+  }, [shots, activeCategory, search])
 
   useEffect(() => {
     setCurrentIndex(0)
-  }, [activeCategory])
+  }, [activeCategory, search, shots.length])
 
-  const changeSlide = (direction) => {
+  const currentShot = filteredShots[currentIndex] || null
+
+  const handleChangeSlide = (direction) => {
     if (!filteredShots.length) return
     setCurrentIndex((prev) => {
       const next = prev + direction
@@ -150,7 +190,70 @@ function App() {
     })
   }
 
-  const currentShot = filteredShots[currentIndex]
+  const handleSelectCard = (index) => {
+    setCurrentIndex(index)
+  }
+
+  const handleFormChange = (field, value) => {
+    setFormData((prev) => ({ ...prev, [field]: value }))
+  }
+
+  const resetForm = () => {
+    setEditingId(null)
+    setFormData(emptyForm)
+  }
+
+  const handleEditStart = () => {
+    if (!currentShot) return
+    setEditingId(currentShot.id)
+    setFormData({
+      title: currentShot.title,
+      category: currentShot.category,
+      mood: currentShot.mood,
+      location: currentShot.location,
+      full: currentShot.full,
+      thumb: currentShot.thumb,
+      description: currentShot.description,
+    })
+  }
+
+  const handleSubmit = (event) => {
+    event.preventDefault()
+    const payload = {
+      ...formData,
+      thumb: formData.thumb || formData.full,
+    }
+    if (
+      !payload.title ||
+      !payload.category ||
+      !payload.mood ||
+      !payload.location ||
+      !payload.full ||
+      !payload.thumb
+    ) {
+      return
+    }
+
+    if (editingId) {
+      setShots((prev) =>
+        prev.map((shot) => (shot.id === editingId ? { ...shot, ...payload } : shot)),
+      )
+      setEditingId(null)
+    } else {
+      const newShot = { ...payload, id: Date.now() }
+      setShots((prev) => [newShot, ...prev])
+      setActiveCategory(payload.category || 'Все')
+      setCurrentIndex(0)
+    }
+    setFormData(emptyForm)
+  }
+
+  const handleDelete = (idToDelete) => {
+    setShots((prev) => prev.filter((shot) => shot.id !== idToDelete))
+    setEditingId((prevId) => (prevId === idToDelete ? null : prevId))
+    setFormData(emptyForm)
+    setCurrentIndex(0)
+  }
 
   return (
     <div className="page">
@@ -159,116 +262,58 @@ function App() {
           <p className="eyebrow">Галерея + карусель</p>
           <h1>Снимки под любое настроение</h1>
           <p className="lead">
-            Переключайте фильтры и листайте карусель, чтобы быстро собрать свой
-            сет из разных настроений и жанров.
+            Фильтруй, листай карусель, добавляй свои кадры и редактируй существующие.
           </p>
-          <div className="legend">
-            <span className="dot"></span>
-            <span>Фильтр оставляет только нужные кадры</span>
-            <span className="dot accent"></span>
-            <span>Карусель листает внутри выбранного фильтра</span>
-          </div>
         </div>
         <div className="hero-stat">
           <p className="stat-label">Снимков в базе</p>
           <p className="stat-value">{shots.length}</p>
-          <p className="stat-note">Все категории и быстрый предпросмотр</p>
+          <p className="stat-note">Фильтрация, поиск и CRUD</p>
         </div>
       </header>
 
-      <div className="filter-bar" role="toolbar" aria-label="Фильтр по жанру">
-        {categories.map((category) => {
-          const count =
-            category === 'Все'
-              ? shots.length
-              : shots.filter((shot) => shot.category === category).length
-          return (
-            <button
-              key={category}
-              className={`filter ${activeCategory === category ? 'active' : ''}`}
-              onClick={() => setActiveCategory(category)}
-            >
-              <span>{category}</span>
-              <span className="count">{count}</span>
-            </button>
-          )
-        })}
+      <div className="actions-row">
+        <FilterBar
+          categories={categories}
+          counts={countsByCategory}
+          activeCategory={activeCategory}
+          onSelect={setActiveCategory}
+        />
+        <SearchBar value={search} onChange={setSearch} />
       </div>
 
-      {currentShot ? (
-        <section
-          className="carousel"
-          aria-label="Карусель карточек внутри выбранной категории"
-        >
-          <div className="frame">
-            <img src={currentShot.full} alt={currentShot.title} />
-            <div className="gradient"></div>
-            <div className="controls">
-              <button
-                className="nav"
-                onClick={() => changeSlide(-1)}
-                aria-label="Предыдущий кадр"
-              >
-                ‹
-              </button>
-              <button
-                className="nav"
-                onClick={() => changeSlide(1)}
-                aria-label="Следующий кадр"
-              >
-                ›
-              </button>
-            </div>
-            <div className="counter">
-              {currentIndex + 1} / {filteredShots.length}
-            </div>
-          </div>
-          <div className="meta">
-            <div className="meta-top">
-              <span className="pill">{currentShot.category}</span>
-              <span className="badge">{currentShot.mood}</span>
-            </div>
-            <h2>{currentShot.title}</h2>
-            <p className="description">{currentShot.description}</p>
-            <div className="meta-grid">
-              <div>
-                <p className="label">Локация</p>
-                <p className="value">{currentShot.location}</p>
-              </div>
-              <div>
-                <p className="label">Кадр</p>
-                <p className="value">
-                  {currentIndex + 1} из {filteredShots.length}
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-      ) : (
-        <div className="empty">Нет снимков для выбранного фильтра</div>
-      )}
+      <div className="layout">
+        <div className="layout-main">
+          {currentShot ? (
+            <Carousel
+              shot={currentShot}
+              index={currentIndex}
+              total={filteredShots.length}
+              onPrev={() => handleChangeSlide(-1)}
+              onNext={() => handleChangeSlide(1)}
+              onEdit={handleEditStart}
+              onDelete={() => handleDelete(currentShot.id)}
+            />
+          ) : (
+            <div className="empty">Нет снимков по текущему фильтру/поиску</div>
+          )}
 
-      <section className="grid" aria-label="Сетка превью">
-        {filteredShots.map((shot, index) => (
-          <button
-            key={shot.id}
-            className={`card ${index === currentIndex ? 'card-active' : ''}`}
-            onClick={() => setCurrentIndex(index)}
-          >
-            <div className="card-image">
-              <img src={shot.thumb} alt={shot.title} />
-            </div>
-            <div className="card-body">
-              <div className="card-top">
-                <span className="pill">{shot.category}</span>
-                <span className="badge subtle">{shot.mood}</span>
-              </div>
-              <p className="card-title">{shot.title}</p>
-              <p className="card-sub">{shot.location}</p>
-            </div>
-          </button>
-        ))}
-      </section>
+          <ShotGrid
+            shots={filteredShots}
+            currentIndex={currentIndex}
+            onSelect={handleSelectCard}
+            onDelete={handleDelete}
+          />
+        </div>
+
+        <ShotForm
+          data={formData}
+          onChange={handleFormChange}
+          onSubmit={handleSubmit}
+          onReset={resetForm}
+          isEditing={Boolean(editingId)}
+        />
+      </div>
     </div>
   )
 }
