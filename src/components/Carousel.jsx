@@ -1,17 +1,14 @@
 function Carousel({ shot, index, total, onPrev, onNext, onEdit, onDelete }) {
   return (
-    <section
-      className="carousel"
-      aria-label="Карусель карточек внутри выбранной категории/поиска"
-    >
+    <section className="carousel" aria-label="Карусель карточек галереи">
       <div className="frame">
         <img src={shot.full} alt={shot.title} />
         <div className="gradient"></div>
         <div className="controls">
-          <button className="nav" onClick={onPrev} aria-label="Предыдущий кадр">
+          <button className="nav" type="button" onClick={onPrev} aria-label="Предыдущий кадр">
             {'<'}
           </button>
-          <button className="nav" onClick={onNext} aria-label="Следующий кадр">
+          <button className="nav" type="button" onClick={onNext} aria-label="Следующий кадр">
             {'>'}
           </button>
         </div>
@@ -19,6 +16,7 @@ function Carousel({ shot, index, total, onPrev, onNext, onEdit, onDelete }) {
           {index + 1} / {total}
         </div>
       </div>
+
       <div className="meta">
         <div className="meta-top">
           <span className="pill">{shot.category}</span>
@@ -26,6 +24,7 @@ function Carousel({ shot, index, total, onPrev, onNext, onEdit, onDelete }) {
         </div>
         <h2>{shot.title}</h2>
         <p className="description">{shot.description}</p>
+
         <div className="meta-grid">
           <div>
             <p className="label">Локация</p>
@@ -38,6 +37,7 @@ function Carousel({ shot, index, total, onPrev, onNext, onEdit, onDelete }) {
             </p>
           </div>
         </div>
+
         <div className="meta-actions">
           <button className="ghost" type="button" onClick={onEdit}>
             Редактировать

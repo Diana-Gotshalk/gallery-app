@@ -6,7 +6,7 @@ function SearchBar({ value, onChange }) {
         type="text"
         placeholder="Название, описание или локация"
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(event) => onChange(event.target.value)}
       />
     </label>
   )

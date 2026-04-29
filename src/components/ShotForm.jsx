@@ -8,7 +8,7 @@ function ShotForm({ data, onChange, onSubmit, onReset, isEditing }) {
       <div className="form-head">
         <div>
           <p className="eyebrow small">Управление</p>
-          <h3>{isEditing ? 'Редактирование' : 'Добавление кадра'}</h3>
+          <h3>{isEditing ? 'Редактирование карточки' : 'Добавление карточки'}</h3>
         </div>
         <div className="form-actions">
           <button type="submit" className="primary">
@@ -30,24 +30,27 @@ function ShotForm({ data, onChange, onSubmit, onReset, isEditing }) {
             placeholder="Например, Неон после дождя"
           />
         </label>
+
         <label>
           Категория
           <input
             type="text"
             value={data.category}
             onChange={handleChange('category')}
-            placeholder="Город, Природа, ..."
+            placeholder="Город, Природа, Архитектура..."
           />
         </label>
+
         <label>
           Настроение
           <input
             type="text"
             value={data.mood}
             onChange={handleChange('mood')}
-            placeholder="Ритм, Тишина и т.п."
+            placeholder="Ритм, Тишина и т.д."
           />
         </label>
+
         <label>
           Локация
           <input
@@ -57,8 +60,9 @@ function ShotForm({ data, onChange, onSubmit, onReset, isEditing }) {
             placeholder="Страна, город"
           />
         </label>
+
         <label className="wide">
-          URL изображения (крупное)
+          URL изображения
           <input
             type="url"
             value={data.full}
@@ -66,21 +70,23 @@ function ShotForm({ data, onChange, onSubmit, onReset, isEditing }) {
             placeholder="https://images.unsplash.com/..."
           />
         </label>
+
         <label className="wide">
-          URL превью (если пусто, возьмется крупное)
+          URL превью
           <input
             type="url"
             value={data.thumb}
             onChange={handleChange('thumb')}
-            placeholder="https://images.unsplash.com/..."
+            placeholder="Если поле пустое, будет использован основной URL"
           />
         </label>
+
         <label className="wide">
           Описание
           <textarea
             value={data.description}
             onChange={handleChange('description')}
-            placeholder="Пара предложений о кадре"
+            placeholder="Коротко опишите кадр"
             rows={3}
           />
         </label>

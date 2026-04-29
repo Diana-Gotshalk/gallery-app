@@ -6,7 +6,7 @@ function ShotGrid({ shots, currentIndex, onSelect, onDelete }) {
           key={shot.id}
           className={`card ${index === currentIndex ? 'card-active' : ''}`}
         >
-          <button className="card-hit" onClick={() => onSelect(index)}>
+          <button className="card-hit" type="button" onClick={() => onSelect(index)}>
             <div className="card-image">
               <img src={shot.thumb} alt={shot.title} />
             </div>
@@ -24,6 +24,7 @@ function ShotGrid({ shots, currentIndex, onSelect, onDelete }) {
           </button>
         </div>
       ))}
+
       {!shots.length && <div className="empty">Ничего не найдено</div>}
     </section>
   )
